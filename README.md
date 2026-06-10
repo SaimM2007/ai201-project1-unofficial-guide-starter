@@ -108,3 +108,9 @@ Always cite which document(s) your answer comes from."
 - *What I gave the AI:* The Retrieval Approach section, the grounding requirement (answer only from retrieved context, cite sources), and the Gradio skeleton from the project spec.
 - *What it produced:* query.py with a retrieve() function using ChromaDB and all-MiniLM-L6-v2, an ask() function with a Groq API call and a system prompt enforcing grounding, and app.py with a working Gradio interface showing answer and sources separately.
 - *What I changed or overrode:* I tested retrieval on 3 eval queries before wiring in generation, which the AI did not suggest. After seeing Hamidi chunks slip into Venugopal results, I kept top-k at 5 rather than increasing it, since adding more chunks would have brought in even more off-topic results.
+
+---
+
+## Demo Recording
+
+https://www.loom.com/share/fe81648e1d79438c9a06cf32c46e394f
