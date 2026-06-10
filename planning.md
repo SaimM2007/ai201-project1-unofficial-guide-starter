@@ -1,122 +1,88 @@
 # Project 1 Planning: The Unofficial Guide
 
-> Write this document before you write any pipeline code.
-> Your spec and architecture diagram are what you'll use to direct AI tools (Claude, Copilot, etc.) to generate your implementation — the more specific they are, the more useful the generated code will be.
-> Update the Retrieval Approach and Chunking Strategy sections if you change your approach during implementation.
-> Update this file before starting any stretch features.
-
----
-
 ## Domain
 
-<!-- What domain did you choose? Why is this knowledge valuable and hard to find through official channels? -->
+Student reviews of CS professors at Rutgers University - New Brunswick. This knowledge is valuable because official course descriptions say nothing about teaching style, exam difficulty, grading fairness, or workload. Students rely on word-of-mouth and Rate My Professors to make informed scheduling decisions, but that information is scattered across individual professor pages and hard to query across multiple professors at once.
 
 ---
 
 ## Documents
 
-<!-- List your specific sources: URLs, subreddit names, forum threads, or file descriptions.
-     Aim for at least 10 sources that together cover different subtopics or perspectives within your domain. -->
-
 | # | Source | Description | URL or location |
 |---|--------|-------------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
+| 1 | Rate My Professors | Student reviews for Professor Abraham Gale (CS205, CS336, DS142) | https://www.ratemyprofessors.com/professor/2814183 → docs/abraham_gale.txt |
+| 2 | Rate My Professors | Student reviews for Professor Ana Centeno (CS111, CS112) | https://www.ratemyprofessors.com/professor/600296 → docs/ana_centeno.txt |
+| 3 | Rate My Professors | Student reviews for Professor Sesh Venugopal (CS210, CS213) | https://www.ratemyprofessors.com/professor/182646 → docs/sesh_venugopal.txt |
+| 4 | Rate My Professors | Student reviews for Professor David Menendez (CS211, CS214, CS314) | https://www.ratemyprofessors.com/professor/2336289 → docs/david_menendez.txt |
+| 5 | Rate My Professors | Student reviews for Professor Ananda Gunawardena (CS205, CS210, CS439) | https://www.ratemyprofessors.com/professor/2414859 → docs/ananda_gunawardena.txt |
+| 6 | Rate My Professors | Student reviews for Professor Samaneh Hamidi (CS205, CS206, CS344) | https://www.ratemyprofessors.com/professor/2519830 → docs/samaneh_hamidi.txt |
+| 7 | Rate My Professors | Student reviews for Professor Tomasz Imielinski (CS142, CS336) | https://www.ratemyprofessors.com/professor/1580600 → docs/tomasz_imielinski.txt |
+| 8 | Rate My Professors | Student reviews for Professor Bernhard Firner (CS211, CS462) | https://www.ratemyprofessors.com/professor/1916642 → docs/bernhard_firner.txt |
+| 9 | Rate My Professors | Student reviews for Professor Minesh Patel (CS211) | https://www.ratemyprofessors.com/professor/2980565 → docs/minesh_patel.txt |
+| 10 | Rate My Professors | Student reviews for Professor Miranda Garcia (CS112, CS205, CS336) | https://www.ratemyprofessors.com/professor/2702069 → docs/miranda_garcia.txt |
 
 ---
 
 ## Chunking Strategy
 
-<!-- How will you split documents into chunks?
-     State your chunk size (in tokens or characters), overlap size, and explain why those
-     numbers fit the structure of your documents.
-     A review-heavy corpus warrants different chunking than a long FAQ. -->
+**Chunk size:** 400 characters
 
-**Chunk size:**
+**Overlap:** 50 characters
 
-**Overlap:**
-
-**Reasoning:**
+**Reasoning:** Each document is a collection of short student reviews, typically 2-5 sentences each. A 400-character chunk captures roughly one full review without cutting it in half. Overlap of 50 characters ensures that if a review lands on a boundary, the key opinion still appears in at least one chunk. Chunks smaller than 300 characters risk cutting individual reviews mid-sentence; chunks larger than 600 would merge multiple reviews and dilute the semantic signal for retrieval.
 
 ---
 
 ## Retrieval Approach
 
-<!-- Which embedding model are you using (e.g., all-MiniLM-L6-v2 via sentence-transformers)?
-     How many chunks will you retrieve per query (top-k)?
-     If you were deploying this for real users and cost wasn't a constraint, what tradeoffs
-     would you weigh in choosing a different embedding model — context length, multilingual
-     support, accuracy on domain-specific text, latency? -->
+**Embedding model:** all-MiniLM-L6-v2 via sentence-transformers
 
-**Embedding model:**
+**Top-k:** 5
 
-**Top-k:**
-
-**Production tradeoff reflection:**
+**Production tradeoff reflection:** For a production system I would consider text-embedding-3-large from OpenAI or a similar model for higher accuracy on domain-specific text. The key tradeoffs are: all-MiniLM-L6-v2 is fast and free but has a 256-token context limit, which is fine for short reviews but would truncate longer documents. A production model would also need multilingual support if serving international students. API-hosted models cost money per query but avoid local compute requirements. For this project, local embedding is the right call since there's no rate limits, no cost, sufficient accuracy for English review text.
 
 ---
 
 ## Evaluation Plan
 
-<!-- List your 5 test questions with their expected correct answers.
-     Questions should be specific enough that you can judge whether the system's response
-     is right or wrong. "What are good dining halls?" is too vague.
-     "What do students say about wait times at [dining hall name] during lunch?" is testable. -->
-
 | # | Question | Expected answer |
 |---|----------|-----------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
+| 1 | What do students say about Sesh Venugopal's exams? | Exams are hard, graded harshly, no curve, and inconsistent with lecture material. |
+| 2 | Is Ana Centeno a good professor for CS111? | Generally yes! She has engaging lectures, cares about students, lots of extra credit, but sometimes goes off topic. |
+| 3 | How is grading in Hamidi's class? | Very strict, quiz-heavy, attendance mandatory, but exams pulled directly from practice problems. |
+| 4 | What courses does David Menendez teach and how hard are they? | CS211 and CS214. The projects are very hard, slow grading, but have a generous curve. |
+| 5 | What do students say about Minesh Patel's lectures in CS211? | Reviews say lectures are clear, well-organized, recorded, and he explains concepts thoroughly. They're majority positive with some noting disorganization in Spring 2026. |
 
 ---
 
 ## Anticipated Challenges
 
-<!-- What could go wrong? Name at least two specific risks with reasoning.
-     Consider: noisy or inconsistent documents, missing source attribution, off-topic
-     retrieval, chunks that split key information across boundaries. -->
+1. **Professor nicknames causing retrieval misses:** Students refer to Menendez as "Menny" and Gunawardena as "Guna." If a user queries by nickname, the embedding model may not match it to the right document since the file uses the full name. This is a vocabulary mismatch problem at the retrieval stage.
 
-1.
-
-2.
+2. **Mixed sentiment within chunks:** A single chunk might contain one positive and one negative review merged together, making it hard for the LLM to give a clean answer. The grounding prompt will need to instruct the model to synthesize across mixed signals rather than pick one side.
 
 ---
 
 ## Architecture
 
-<!-- Draw a diagram of your pipeline showing the five stages:
-     Document Ingestion → Chunking → Embedding + Vector Store → Retrieval → Generation
-     Label each stage with the tool or library you're using.
-     You can use ASCII art, a Mermaid diagram, or embed a sketch as an image.
-     You'll use this diagram as context when prompting AI tools to implement each stage. -->
+```mermaid
+flowchart LR
+    A["📄 Document Ingestion\n─────────────\ningest.py\ndocs/*.txt files"] --> B["✂️ Chunking\n─────────────\nchunk_text()\n400 chars / 50 overlap"]
+    B --> C["🔢 Embedding\n─────────────\nall-MiniLM-L6-v2\nsentence-transformers"]
+    C --> D["🗄️ Vector Store\n─────────────\nChromaDB\nlocal / no API key"]
+    D --> E["🔍 Retrieval\n─────────────\nretrieve(query)\ntop-k = 5"]
+    E --> F["💬 Generation\n─────────────\nGroq llama-3.3-70b\nGradio UI"]
+```
 
 ---
 
 ## AI Tool Plan
 
-<!-- For each part of the pipeline below, describe:
-     - Which AI tool you plan to use (Claude, Copilot, ChatGPT, etc.)
-     - What you'll give it as input (which sections of this planning.md, which requirements)
-     - What you expect it to produce
-     - How you'll verify the output matches your spec
-
-     "I'll use AI to help me code" is not a plan.
-     "I'll give Claude my Chunking Strategy section and ask it to implement chunk_text()
-     with my specified chunk size and overlap" is a plan. -->
-
 **Milestone 3 — Ingestion and chunking:**
+Give Claude this planning.md (Domain, Documents, Chunking Strategy sections) and ask it to implement `ingest.py` that loads all .txt files from docs/, cleans whitespace, splits into 400-character chunks with 50-character overlap, and prints 5 sample chunks for verification.
 
 **Milestone 4 — Embedding and retrieval:**
+Give Claude the Architecture section and Retrieval Approach section and ask it to implement the ChromaDB setup and a `retrieve(query, k=5)` function that returns chunks with source metadata.
 
 **Milestone 5 — Generation and interface:**
+Give Claude the grounding requirement ("answer only from retrieved context, cite sources") and the Gradio skeleton from the project spec, and ask it to implement `query.py` with the Groq API call and `app.py` with the Gradio interface.
